@@ -1,30 +1,133 @@
-<!DOCTYPE html>
-<html lang="ru">
+<!doctype html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Видео с папки</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Pusheen's Comics</title>
   <style>
-    body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      background: #111;
-      margin: 0;
+    :root{
+      --bg:#fffafc;
+      --card:#ffffff;
+      --accent:#ffb6c1;
+      --gap:16px;
+      --text:#333;
     }
-    video {
-      max-width: 90%;
-      max-height: 90%;
-      border-radius: 15px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.7);
+    html,body{
+      height:100%;margin:0;
+      font-family:'Comic Sans MS', 'Segoe UI', cursive;
+      background:var(--bg);
+      color:var(--text);
     }
+    .wrap{max-width:960px;margin:0 auto;padding:20px}
+    header{display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:20px}
+    h1{margin:0;font-size:2rem;color:#ff69b4;text-shadow:1px 1px #fff}
+
+    /* gallery */
+    .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:var(--gap)}
+    .card{background:var(--card);border-radius:16px;overflow:hidden;position:relative;box-shadow:0 4px 10px rgba(0,0,0,0.15);transition:transform .2s}
+    .card:hover{transform:translateY(-4px)}
+    .card img{display:block;width:100%;height:auto}
+    .caption{padding:8px;text-align:center;font-size:0.9rem;color:#555}
+
+    /* lightbox */
+    .lightbox{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.7);z-index:40}
+    .lightbox.visible{display:flex}
+    .lightbox img{max-width:90vw;max-height:90vh;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.8)}
+    .info{position:absolute;top:20px;left:20px;background:rgba(255,182,193,0.8);padding:6px 12px;border-radius:10px;font-weight:bold;color:#333}
+
+    footer{margin-top:30px;text-align:center;color:#777;font-size:0.9rem}
+    @media (max-width:520px){.gallery{grid-template-columns:repeat(2,1fr)}}
   </style>
 </head>
 <body>
-  <!-- Видеофайл должен лежать в той же папке -->
-  <video controls autoplay>
-    <source src="video.mp4" type="video/mp4">
-    Ваш браузер не поддерживает видео.
-  </video>
+  <div class="wrap">
+    <header>
+      <h1>Pusheen's Comics</h1>
+    </header>
+
+    <main>
+      <div id="gallery" class="gallery" aria-live="polite"></div>
+    </main>
+
+    <footer>
+      <div>Place your comic pages (1.png, 2.png, ..., up to 100.png) in the same folder as this HTML file.</div>
+    </footer>
+  </div>
+
+  <!-- Lightbox -->
+  <div id="lightbox" class="lightbox" role="dialog" aria-modal="true">
+    <img id="lightboxImg" src="" alt="Large view" />
+    <div class="info" id="info">1 / 1</div>
+  </div>
+
+  <script>
+    const MAX_IMAGES = 100;
+
+    // auto-generate list of images (1.png ... 100.png)
+    const images = [];
+    for(let i=1; i<=MAX_IMAGES; i++){
+      images.push(`${i}.png`);
+    }
+
+    const galleryEl = document.getElementById('gallery');
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightboxImg');
+    const info = document.getElementById('info');
+
+    let currentIndex = 0;
+
+    function renderGallery(){
+      galleryEl.innerHTML = '';
+      images.forEach((src, i) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.tabIndex = 0;
+        const img = document.createElement('img');
+        img.src = src;
+        img.alt = `Page ${i+1}`;
+        const cap = document.createElement('div');
+        cap.className = 'caption';
+        cap.textContent = `Page ${i+1}`;
+        card.appendChild(img);
+        card.appendChild(cap);
+        card.addEventListener('click', () => openLightbox(i));
+        card.addEventListener('keydown', (e) => { if(e.key === 'Enter') openLightbox(i)});
+        galleryEl.appendChild(card);
+      });
+    }
+
+    function openLightbox(i){
+      currentIndex = i;
+      lightboxImg.src = images[currentIndex];
+      info.textContent = `${currentIndex+1} / ${images.length}`;
+      lightbox.classList.add('visible');
+    }
+
+    function closeLightbox(){
+      lightbox.classList.remove('visible');
+      lightboxImg.src = '';
+    }
+
+    lightbox.addEventListener('click', (e) => {
+      if(e.target === lightbox || e.target === lightboxImg) closeLightbox();
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if(!lightbox.classList.contains('visible')) return;
+      if(e.key === 'ArrowRight') {
+        currentIndex = (currentIndex + 1) % images.length;
+        lightboxImg.src = images[currentIndex];
+        info.textContent = `${currentIndex+1} / ${images.length}`;
+      }
+      if(e.key === 'ArrowLeft') {
+        currentIndex = (currentIndex - 1 + images.length) % images.length;
+        lightboxImg.src = images[currentIndex];
+        info.textContent = `${currentIndex+1} / ${images.length}`;
+      }
+      if(e.key === 'Escape') closeLightbox();
+    });
+
+    renderGallery();
+  </script>
 </body>
 </html>

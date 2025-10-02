@@ -5,297 +5,195 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Pusheen's Comics</title>
   <style>
-    :root {
+    :root{
       --bg:#fffafc;
       --card:#ffffff;
       --accent:#ffb6c1;
-      --text:#333;
+      --muted:#f4e9ef;
       --gap:16px;
+      --text:#333;
+      --accent-2:#ffd6e8;
     }
-    body {
-      margin:0;
-      font-family:'Comic Sans MS','Segoe UI',cursive;
-      background:var(--bg);
-      color:var(--text);
-    }
-    header {
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      padding:12px 20px;
-      background:#ffe4ec;
-      position:sticky;
-      top:0;
-      z-index:20;
-    }
-    header h1 {
-      margin:0;
-      font-size:1.5rem;
-      color:#ff69b4;
-    }
-    header button {
-      background:var(--accent);
-      border:none;
-      border-radius:8px;
-      padding:6px 14px;
-      font-size:1rem;
-      cursor:pointer;
-    }
-    .wrap {max-width:960px;margin:0 auto;padding:20px}
-    .gallery {
-      display:grid;
-      grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
-      gap:var(--gap);
-    }
-    .card {
-      background:var(--card);
-      border-radius:16px;
-      overflow:hidden;
-      box-shadow:0 4px 10px rgba(0,0,0,.15);
-      cursor:pointer;
-      transition:transform .2s;
-    }
-    .card:hover {transform:translateY(-4px)}
-    .card img {width:100%;display:block}
-    .caption {text-align:center;padding:8px;color:#555}
+    html,body{height:100%;margin:0;font-family:Inter,"Comic Sans MS",system-ui;background:var(--bg);color:var(--text)}
+    .wrap{max-width:1100px;margin:18px auto;padding:18px}
+    header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    h1{margin:0;font-size:1.6rem;color:#ff69b4}
+    .controls{display:flex;gap:8px;align-items:center}
+    .btn{background:var(--accent);border:none;padding:8px 12px;border-radius:12px;color:white;cursor:pointer;font-weight:600}
+    .ghost{background:transparent;border:1px solid rgba(0,0,0,0.06);color:var(--text)}
 
-    /* Lightbox */
-    .lightbox {
-      position:fixed;inset:0;display:none;
-      background:rgba(0,0,0,.7);
-      z-index:30;
-      justify-content:center;align-items:center;
-    }
-    .lightbox.visible {display:flex}
-    .lightbox-content {
-      background:#fff;
-      border-radius:16px;
-      max-width:90%;
-      max-height:90%;
-      display:flex;
-      flex-direction:row;
-      overflow:hidden;
-    }
-    .lightbox img {
-      max-width:60vw;
-      max-height:90vh;
-      object-fit:contain;
-      background:#000;
-    }
-    .comments {
-      width:280px;
-      padding:12px;
-      overflow-y:auto;
-      background:#fafafa;
-    }
-    .comments h3 {
-      margin-top:0;
-      font-size:1.1rem;
-      color:#ff69b4;
-    }
-    .comment {
-      background:#fff;
-      padding:6px 8px;
-      border-radius:8px;
-      margin:6px 0;
-      font-size:.9rem;
-    }
-    .comment .author {font-weight:bold;color:#333}
-    .comment .text {margin:2px 0}
-    .new-comment textarea {
-      width:100%;min-height:60px;
-      border:1px solid #ccc;
-      border-radius:8px;
-      padding:6px;
-      resize:vertical;
-    }
-    .new-comment button {
-      margin-top:6px;
-      background:var(--accent);
-      border:none;
-      border-radius:6px;
-      padding:6px 10px;
-      cursor:pointer;
-    }
+    /* layout */
+    .layout{display:grid;grid-template-columns:1fr 360px;gap:18px;margin-top:16px}
+    @media (max-width:800px){.layout{grid-template-columns:1fr}}
 
-    /* Login modal */
-    .modal {
-      position:fixed;inset:0;
-      background:rgba(0,0,0,.5);
-      display:none;
-      justify-content:center;align-items:center;
-      z-index:50;
-    }
-    .modal.visible {display:flex}
-    .modal-content {
-      background:#fff;
-      padding:20px;
-      border-radius:12px;
-      width:300px;
-      text-align:center;
-    }
-    .modal-content input {
-      width:90%;
-      padding:8px;
-      margin:10px 0;
-      border:1px solid #ccc;
-      border-radius:8px;
-    }
-    .modal-content button {
-      background:var(--accent);
-      border:none;
-      border-radius:8px;
-      padding:8px 14px;
-      cursor:pointer;
-    }
+    /* gallery */
+    .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:var(--gap)}
+    .card{background:var(--card);border-radius:12px;overflow:hidden;position:relative;box-shadow:0 6px 18px rgba(2,6,23,0.06);cursor:pointer}
+    .card img{display:block;width:100%;height:auto}
+    .caption{padding:8px;text-align:center;font-size:0.9rem;color:#666}
 
-    /* Responsive */
-    @media (max-width:600px){
-      .gallery{grid-template-columns:repeat(2,1fr)}
-      .lightbox-content{flex-direction:column;max-height:95%}
-      .lightbox img{max-width:100%;max-height:60vh}
-      .comments{width:100%;max-height:35vh}
-      .modal-content{width:90%;max-width:350px}
-      .modal-content input,.modal-content button{font-size:1.2rem}
+    /* sidebar (PC only) */
+    .sidebar{background:var(--muted);padding:12px;border-radius:12px;height:fit-content}
+    .profile{display:flex;align-items:center;gap:10px}
+    .avatar{width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
+    .small{font-size:0.9rem;color:#555}
+    .link{background:none;border:none;color:#ff69b4;cursor:pointer;font-weight:600}
+    @media(max-width:800px){.sidebar{display:none}} /* спрятать на мобилке */
+
+    /* lightbox */
+    .lightbox{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.75);z-index:60}
+    .lightbox.visible{display:flex}
+    .lightbox-inner{max-width:92vw;max-height:88vh;background:#fff;border-radius:12px;overflow:hidden;display:flex;gap:12px}
+    .lb-img{max-width:66vw;max-height:88vh;object-fit:contain}
+    .lb-side{width:360px;padding:12px;display:flex;flex-direction:column;gap:8px;background:var(--muted)}
+    @media(max-width:800px){
+      .lightbox-inner{flex-direction:column}
+      .lb-img{max-width:100%;max-height:60vh}
+      .lb-side{width:100%;max-height:40vh;overflow:auto}
     }
+    .comments-list{flex:1;overflow:auto;padding:6px;border-radius:8px;background:#fff}
+    .comment{padding:8px;border-radius:8px;margin-bottom:6px;background:#fff;box-shadow:0 2px 6px rgba(2,6,23,0.04)}
+    .meta{font-size:0.85rem;color:#666}
+    .msg{margin-top:6px}
+    textarea{width:100%;min-height:64px;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.08)}
+
+    /* auth modal (мобилка) */
+    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);z-index:80}
+    .modal.visible{display:flex}
+    .card-modal{background:white;padding:18px;border-radius:12px;max-width:420px;width:100%}
+    .field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+
+    footer{margin-top:18px;text-align:center;color:#888}
   </style>
 </head>
 <body>
-  <header>
-    <h1>Pusheen's Comics</h1>
-    <div>
-      <button id="signinBtn">Sign in</button>
-      <button id="logoutBtn" style="display:none">Logout</button>
-    </div>
-  </header>
-
   <div class="wrap">
-    <main>
-      <div id="gallery" class="gallery"></div>
-    </main>
+    <header>
+      <h1>Pusheen's Comics</h1>
+      <div class="controls">
+        <button id="openComments" class="btn ghost">Comments</button>
+        <!-- Кнопка входа только для мобилки -->
+        <button id="mobileLoginBtn" class="btn" style="display:none">Sign in</button>
+        <div id="userArea"></div>
+      </div>
+    </header>
+
+    <div class="layout">
+      <main>
+        <div id="gallery" class="gallery"></div>
+      </main>
+
+      <!-- ПК-версия: боковая панель -->
+      <aside class="sidebar">
+        <div id="profileBox">
+          <div class="profile">
+            <div class="avatar" id="avatar">P</div>
+            <div>
+              <div id="usernameDisplay" style="font-weight:700">Guest</div>
+              <div class="small">Login to leave comments — no email required</div>
+            </div>
+          </div>
+          <div style="margin-top:10px">
+            <button id="loginBtn" class="btn">Sign in</button>
+            <button id="logoutBtn" class="btn ghost" style="display:none;margin-left:8px">Logout</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <footer>Local-only accounts and comments — stored in your browser.</footer>
   </div>
 
   <!-- Lightbox -->
   <div id="lightbox" class="lightbox">
-    <div class="lightbox-content">
-      <img id="lightboxImg" src="" alt="">
-      <div class="comments">
-        <h3 id="commentHeader">Comments</h3>
-        <div id="commentList"></div>
-        <div class="new-comment">
-          <textarea id="commentText" placeholder="Write a comment..."></textarea>
-          <button id="postBtn">Post</button>
+    <div class="lightbox-inner">
+      <img id="lbImg" class="lb-img" src="" alt="comic page" />
+      <div class="lb-side">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-weight:700">Comments <span id="lbPage"></span></div>
+        </div>
+        <div class="comments-list" id="commentsList"></div>
+        <div>
+          <div class="small">Write a comment as <span id="commentAs">Guest</span></div>
+          <textarea id="commentText"></textarea>
+          <div style="display:flex;gap:8px;margin-top:8px;justify-content:flex-end">
+            <button id="saveComment" class="btn">Post</button>
+            <button id="clearComments" class="btn ghost">Clear</button>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Login modal -->
+  <!-- Модальное окно входа (для мобилок) -->
   <div id="loginModal" class="modal">
-    <div class="modal-content">
-      <h2>Sign in</h2>
-      <input type="text" id="username" placeholder="Enter a nickname"/>
-      <button id="loginBtn">Login</button>
+    <div class="card-modal">
+      <h3>Sign in</h3>
+      <div class="field">
+        <label>Choose a username</label>
+        <input id="usernameInput" placeholder="e.g. CatFan123" />
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button id="cancelLogin" class="btn ghost">Cancel</button>
+        <button id="doLogin" class="btn">Sign in</button>
+      </div>
     </div>
   </div>
 
   <script>
-    const MAX_IMAGES=100;
-    const galleryEl=document.getElementById('gallery');
-    const lightbox=document.getElementById('lightbox');
-    const lightboxImg=document.getElementById('lightboxImg');
-    const commentList=document.getElementById('commentList');
-    const commentText=document.getElementById('commentText');
-    const postBtn=document.getElementById('postBtn');
-    const commentHeader=document.getElementById('commentHeader');
+    const STORAGE_USER_KEY='pusheen_user';
+    function currentUser(){return localStorage.getItem(STORAGE_USER_KEY);}
+    function saveUser(u){localStorage.setItem(STORAGE_USER_KEY,u);renderUserArea();}
+    function logoutUser(){localStorage.removeItem(STORAGE_USER_KEY);renderUserArea();}
 
-    const loginModal=document.getElementById('loginModal');
-    const signinBtn=document.getElementById('signinBtn');
-    const logoutBtn=document.getElementById('logoutBtn');
-    const loginBtn=document.getElementById('loginBtn');
-    const usernameInput=document.getElementById('username');
-
-    let currentImage=null;
-    let currentUser=localStorage.getItem('pusheen_user')||null;
-
+    const images=[];for(let i=1;i<=100;i++)images.push(i+'.png');
+    const gallery=document.getElementById('gallery');
     function renderGallery(){
-      for(let i=1;i<=MAX_IMAGES;i++){
-        const img=document.createElement('img');
-        img.src=`${i}.png`;
-        img.alt=`Page ${i}`;
-        const card=document.createElement('div');
-        card.className='card';
-        const cap=document.createElement('div');
-        cap.className='caption';
-        cap.textContent=`Page ${i}`;
-        card.appendChild(img);
-        card.appendChild(cap);
-        card.addEventListener('click',()=>openLightbox(i));
-        galleryEl.appendChild(card);
-      }
-    }
-
-    function openLightbox(i){
-      currentImage=i;
-      lightboxImg.src=`${i}.png`;
-      commentHeader.textContent=`Comments — Page ${i}`;
-      renderComments();
-      lightbox.classList.add('visible');
-    }
-    function closeLightbox(){lightbox.classList.remove('visible')}
-
-    lightbox.addEventListener('click',(e)=>{
-      if(e.target===lightbox) closeLightbox();
-    });
-
-    function renderComments(){
-      const all=JSON.parse(localStorage.getItem('pusheen_comments')||'{}');
-      const list=all[currentImage]||[];
-      commentList.innerHTML='';
-      list.forEach(c=>{
-        const div=document.createElement('div');
-        div.className='comment';
-        div.innerHTML=`<div class=\"author\">${c.user}</div><div class=\"text\">${c.text}</div>`;
-        commentList.appendChild(div);
+      gallery.innerHTML='';
+      images.forEach((src,i)=>{
+        const c=document.createElement('div');c.className='card';
+        const img=document.createElement('img');img.src=src;
+        const cap=document.createElement('div');cap.className='caption';cap.textContent='Page '+(i+1);
+        c.append(img,cap);c.onclick=()=>openLightbox(i);
+        gallery.appendChild(c);
       });
     }
 
-    postBtn.onclick=()=>{
-      if(!currentUser){alert('Please sign in first!');return;}
-      const text=commentText.value.trim();
-      if(!text) return;
-      let all=JSON.parse(localStorage.getItem('pusheen_comments')||'{}');
-      if(!all[currentImage]) all[currentImage]=[];
-      all[currentImage].push({user:currentUser,text});
-      localStorage.setItem('pusheen_comments',JSON.stringify(all));
-      commentText.value='';
-      renderComments();
-    };
+    const lightbox=document.getElementById('lightbox');const lbImg=document.getElementById('lbImg');const lbPage=document.getElementById('lbPage');
+    let currentIndex=0;
+    function openLightbox(i){currentIndex=i;lbImg.src=images[i];lbPage.textContent="("+ (i+1)+")";lightbox.classList.add('visible');refreshComments();}
+    function closeLightbox(){lightbox.classList.remove('visible');}
+    lightbox.addEventListener('click',e=>{if(e.target.id==='lightbox'||e.target.id==='lbImg')closeLightbox();});
 
-    signinBtn.onclick=()=>{loginModal.classList.add('visible')};
-    logoutBtn.onclick=()=>{currentUser=null;localStorage.removeItem('pusheen_user');updateAuth()};
-    loginBtn.onclick=()=>{
-      const name=usernameInput.value.trim();
-      if(!name) return;
-      currentUser=name;
-      localStorage.setItem('pusheen_user',name);
-      loginModal.classList.remove('visible');
-      usernameInput.value='';
-      updateAuth();
-    };
+    // Comments
+    function loadComments(){try{return JSON.parse(localStorage.getItem('pusheen_comments'))||{};}catch(e){return {};}}
+    function saveComments(o){localStorage.setItem('pusheen_comments',JSON.stringify(o));}
+    function addComment(img,u,t){const all=loadComments();all[img]=all[img]||[];all[img].push({user:u,text:t,time:new Date().toISOString()});saveComments(all);}
+    function refreshComments(){const all=loadComments()[images[currentIndex]]||[];const list=document.getElementById('commentsList');list.innerHTML='';all.forEach(c=>{const el=document.createElement('div');el.className='comment';el.innerHTML='<b>'+c.user+'</b>: '+c.text;list.appendChild(el);});document.getElementById('commentAs').textContent=currentUser()||'Guest';document.getElementById('commentText').value='';}
+    document.getElementById('saveComment').onclick=()=>{const txt=document.getElementById('commentText').value.trim();if(!txt)return;addComment(images[currentIndex],currentUser()||'Guest',txt);refreshComments();};
+    document.getElementById('clearComments').onclick=()=>{const all=loadComments();delete all[images[currentIndex]];saveComments(all);refreshComments();};
 
-    function updateAuth(){
-      if(currentUser){
-        signinBtn.style.display='none';
-        logoutBtn.style.display='inline-block';
-      } else {
-        signinBtn.style.display='inline-block';
-        logoutBtn.style.display='none';
-      }
+    // Auth
+    function renderUserArea(){
+      const ua=document.getElementById('userArea');ua.innerHTML='';
+      const u=currentUser();
+      if(u){ua.textContent='Hello, '+u;document.getElementById('loginBtn')?.style&&(document.getElementById('loginBtn').style.display='none');document.getElementById('logoutBtn').style.display='inline-block';document.getElementById('avatar').textContent=u[0].toUpperCase();document.getElementById('usernameDisplay').textContent=u;}
+      else{ua.textContent='Guest';document.getElementById('loginBtn')?.style&&(document.getElementById('loginBtn').style.display='inline-block');document.getElementById('logoutBtn').style.display='none';}
     }
+    document.getElementById('loginBtn')?.addEventListener('click',()=>{const uname=prompt("Enter username:");if(uname)saveUser(uname);});
+    document.getElementById('logoutBtn')?.addEventListener('click',()=>logoutUser());
 
-    renderGallery();
-    updateAuth();
+    // Mobile login button opens modal
+    const mobBtn=document.getElementById('mobileLoginBtn');const loginModal=document.getElementById('loginModal');
+    mobBtn.addEventListener('click',()=>loginModal.classList.add('visible'));
+    document.getElementById('cancelLogin').onclick=()=>loginModal.classList.remove('visible');
+    document.getElementById('doLogin').onclick=()=>{const val=document.getElementById('usernameInput').value.trim();if(!val)return;saveUser(val);loginModal.classList.remove('visible');};
+
+    // Show mobile login button only on small screens
+    function checkScreen(){if(window.innerWidth<=800){mobBtn.style.display='inline-block';}else{mobBtn.style.display='none';}}
+    window.addEventListener('resize',checkScreen);checkScreen();
+
+    renderGallery();renderUserArea();
   </script>
 </body>
 </html>

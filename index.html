@@ -9,125 +9,310 @@
       --bg:#fffafc;
       --card:#ffffff;
       --accent:#ffb6c1;
+      --muted:#f4e9ef;
       --gap:16px;
       --text:#333;
+      --accent-2:#ffd6e8;
     }
-    html,body{
-      height:100%;margin:0;
-      font-family:'Comic Sans MS', 'Segoe UI', cursive;
-      background:var(--bg);
-      color:var(--text);
-    }
-    .wrap{max-width:960px;margin:0 auto;padding:20px}
-    header{display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:20px}
-    h1{margin:0;font-size:2rem;color:#ff69b4;text-shadow:1px 1px #fff}
+    html,body{height:100%;margin:0;font-family:Inter, "Comic Sans MS", system-ui, -apple-system, "Segoe UI", Roboto, 'Helvetica Neue', Arial;background:var(--bg);color:var(--text)}
+    .wrap{max-width:1100px;margin:18px auto;padding:18px}
+    header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    h1{margin:0;font-size:1.6rem;color:#ff69b4}
+    .controls{display:flex;gap:8px;align-items:center}
+    .btn{background:var(--accent);border:none;padding:8px 12px;border-radius:12px;color:white;cursor:pointer;font-weight:600}
+    .ghost{background:transparent;border:1px solid rgba(0,0,0,0.06);color:var(--text)}
+
+    /* layout */
+    .layout{display:grid;grid-template-columns:1fr 360px;gap:18px;margin-top:16px}
+    @media (max-width:1000px){.layout{grid-template-columns:1fr}}
 
     /* gallery */
     .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:var(--gap)}
-    .card{background:var(--card);border-radius:16px;overflow:hidden;position:relative;box-shadow:0 4px 10px rgba(0,0,0,0.15);transition:transform .2s}
-    .card:hover{transform:translateY(-4px)}
+    .card{background:var(--card);border-radius:12px;overflow:hidden;position:relative;box-shadow:0 6px 18px rgba(2,6,23,0.06);cursor:pointer}
     .card img{display:block;width:100%;height:auto}
-    .caption{padding:8px;text-align:center;font-size:0.9rem;color:#555}
+    .caption{padding:8px;text-align:center;font-size:0.9rem;color:#666}
+
+    /* sidebar */
+    .sidebar{background:var(--muted);padding:12px;border-radius:12px;height:fit-content}
+    .profile{display:flex;align-items:center;gap:10px}
+    .avatar{width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
+    .small{font-size:0.9rem;color:#555}
+    .link{background:none;border:none;color:#ff69b4;cursor:pointer;font-weight:600}
 
     /* lightbox */
-    .lightbox{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.7);z-index:40}
+    .lightbox{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.75);z-index:60}
     .lightbox.visible{display:flex}
-    .lightbox img{max-width:90vw;max-height:90vh;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.8)}
-    .info{position:absolute;top:20px;left:20px;background:rgba(255,182,193,0.8);padding:6px 12px;border-radius:10px;font-weight:bold;color:#333}
+    .lightbox-inner{max-width:92vw;max-height:88vh;background:linear-gradient(180deg,#fff,#fff);border-radius:12px;overflow:hidden;display:flex;gap:12px}
+    .lb-img{max-width:66vw;max-height:88vh;object-fit:contain}
+    .lb-side{width:360px;padding:12px;display:flex;flex-direction:column;gap:8px;background:var(--muted)}
+    .comments-list{flex:1;overflow:auto;padding:6px;border-radius:8px;background:linear-gradient(#fff,#fff)}
+    .comment{padding:8px;border-radius:8px;margin-bottom:6px;background:#fff;box-shadow:0 2px 6px rgba(2,6,23,0.04)}
+    .meta{font-size:0.85rem;color:#666}
+    .msg{margin-top:6px}
+    textarea{width:100%;min-height:64px;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.08)}
 
-    footer{margin-top:30px;text-align:center;color:#777;font-size:0.9rem}
-    @media (max-width:520px){.gallery{grid-template-columns:repeat(2,1fr)}}
+    /* auth modal */
+    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);z-index:80}
+    .modal.visible{display:flex}
+    .card-modal{background:white;padding:18px;border-radius:12px;max-width:420px;width:100%}
+    .field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+
+    footer{margin-top:18px;text-align:center;color:#888}
   </style>
 </head>
 <body>
   <div class="wrap">
     <header>
       <h1>Pusheen's Comics</h1>
+      <div class="controls">
+        <button id="openComments" class="btn ghost">Comments</button>
+        <div id="userArea"></div>
+      </div>
     </header>
 
-    <main>
-      <div id="gallery" class="gallery" aria-live="polite"></div>
-    </main>
+    <div class="layout">
+      <main>
+        <div id="gallery" class="gallery" aria-live="polite"></div>
+      </main>
 
-    <footer>
-      <div>Place your comic pages (1.png, 2.png, ..., up to 100.png) in the same folder as this HTML file.</div>
-    </footer>
+      <aside class="sidebar">
+        <div id="profileBox">
+          <div class="profile">
+            <div class="avatar" id="avatar">P</div>
+            <div>
+              <div id="usernameDisplay" style="font-weight:700">Guest</div>
+              <div class="small">Login to leave comments — no email required</div>
+            </div>
+          </div>
+          <div style="margin-top:10px">
+            <button id="loginBtn" class="btn">Sign in</button>
+            <button id="logoutBtn" class="btn ghost" style="display:none;margin-left:8px">Logout</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <footer>Local-only accounts and comments — stored in your browser. Not a real server login.</footer>
   </div>
 
   <!-- Lightbox -->
   <div id="lightbox" class="lightbox" role="dialog" aria-modal="true">
-    <img id="lightboxImg" src="" alt="Large view" />
-    <div class="info" id="info">1 / 1</div>
+    <div class="lightbox-inner">
+      <img id="lbImg" class="lb-img" src="" alt="comic page" />
+      <div class="lb-side">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div id="lbPage" style="font-weight:700">Page ?</div>
+          <div class="small" id="lbCount"></div>
+        </div>
+        <div class="comments-list" id="commentsList"></div>
+        <div>
+          <div class="small">Write a comment as <span id="commentAs">Guest</span></div>
+          <textarea id="commentText" placeholder="Say something nice about this page..."></textarea>
+          <div style="display:flex;gap:8px;margin-top:8px;justify-content:flex-end">
+            <button id="saveComment" class="btn">Post</button>
+            <button id="clearComments" class="btn ghost">Clear</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- All comments -->
+  <div id="commentsPanel" class="modal" aria-hidden="true">
+    <div class="card-modal">
+      <h3 style="margin-top:0">All comments</h3>
+      <div id="allComments" style="max-height:60vh;overflow:auto;margin-bottom:12px"></div>
+      <div style="display:flex;justify-content:flex-end;gap:8px">
+        <button id="closeAllComments" class="btn ghost">Close</button>
+        <button id="clearAllLocal" class="btn">Clear All</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Login -->
+  <div id="loginModal" class="modal" aria-hidden="true">
+    <div class="card-modal">
+      <h3 style="margin-top:0">Sign in</h3>
+      <div class="field">
+        <label>Choose a username (no email required)</label>
+        <input id="usernameInput" placeholder="e.g. CatFan123" />
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button id="cancelLogin" class="btn ghost">Cancel</button>
+        <button id="doLogin" class="btn">Sign in</button>
+      </div>
+    </div>
   </div>
 
   <script>
-    const MAX_IMAGES = 100;
+    const STORAGE_USER_KEY = 'pusheen_user';
+    const STORAGE_COMMENTS_KEY = 'pusheen_comments_v1';
 
-    // auto-generate list of images (1.png ... 100.png)
-    const images = [];
-    for(let i=1; i<=MAX_IMAGES; i++){
-      images.push(`${i}.png`);
+    function setCookie(name, value, days=365){
+      const d = new Date(); d.setTime(d.getTime() + (days*24*60*60*1000));
+      document.cookie = name + '=' + encodeURIComponent(value) + ';expires=' + d.toUTCString() + ';path=/';
+    }
+    function getCookie(name){
+      const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+      return v ? decodeURIComponent(v.pop()) : null;
     }
 
+    function saveUser(username){
+      localStorage.setItem(STORAGE_USER_KEY, username);
+      setCookie('pusheen_user', username, 365);
+      renderUserArea();
+    }
+    function logoutUser(){
+      localStorage.removeItem(STORAGE_USER_KEY);
+      setCookie('pusheen_user', '', -1);
+      renderUserArea();
+    }
+    function currentUser(){
+      return localStorage.getItem(STORAGE_USER_KEY) || getCookie('pusheen_user') || null;
+    }
+
+    function loadComments(){
+      try{ return JSON.parse(localStorage.getItem(STORAGE_COMMENTS_KEY)) || {}; } catch(e){ return {}; }
+    }
+    function saveComments(obj){ localStorage.setItem(STORAGE_COMMENTS_KEY, JSON.stringify(obj)); }
+    function addComment(image, user, text){
+      if(!text.trim()) return;
+      const all = loadComments();
+      all[image] = all[image] || [];
+      all[image].push({user, text: text.trim(), time: new Date().toISOString()});
+      saveComments(all);
+    }
+    function clearCommentsFor(image){ const all = loadComments(); delete all[image]; saveComments(all); }
+    function clearAllComments(){ saveComments({}); }
+
+    const MAX = 100;
+    const images = Array.from({length:MAX},(_,i)=>`${i+1}.png`);
     const galleryEl = document.getElementById('gallery');
     const lightbox = document.getElementById('lightbox');
-    const lightboxImg = document.getElementById('lightboxImg');
-    const info = document.getElementById('info');
+    const lbImg = document.getElementById('lbImg');
+    const commentsList = document.getElementById('commentsList');
+    const commentText = document.getElementById('commentText');
+    const commentAs = document.getElementById('commentAs');
+    const lbPage = document.getElementById('lbPage');
+    const lbCount = document.getElementById('lbCount');
 
     let currentIndex = 0;
+
+    function renderUserArea(){
+      const ua = document.getElementById('userArea');
+      ua.innerHTML = '';
+      const user = currentUser();
+      const avatar = document.getElementById('avatar');
+      const unameEl = document.getElementById('usernameDisplay');
+      if(user){
+        ua.textContent = user;
+        document.getElementById('loginBtn').style.display = 'none';
+        document.getElementById('logoutBtn').style.display = 'inline-block';
+        avatar.textContent = user[0].toUpperCase();
+        unameEl.textContent = user;
+      } else {
+        ua.textContent = 'Guest';
+        document.getElementById('loginBtn').style.display = 'inline-block';
+        document.getElementById('logoutBtn').style.display = 'none';
+        avatar.textContent = 'P';
+        unameEl.textContent = 'Guest';
+      }
+    }
 
     function renderGallery(){
       galleryEl.innerHTML = '';
       images.forEach((src, i) => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.tabIndex = 0;
-        const img = document.createElement('img');
-        img.src = src;
-        img.alt = `Page ${i+1}`;
-        const cap = document.createElement('div');
-        cap.className = 'caption';
-        cap.textContent = `Page ${i+1}`;
-        card.appendChild(img);
-        card.appendChild(cap);
-        card.addEventListener('click', () => openLightbox(i));
-        card.addEventListener('keydown', (e) => { if(e.key === 'Enter') openLightbox(i)});
+        const card = document.createElement('div'); card.className='card';
+        const img = document.createElement('img'); img.src = src; img.alt = 'Page ' + (i+1);
+        const cap = document.createElement('div'); cap.className='caption'; cap.textContent = 'Page ' + (i+1);
+        card.appendChild(img); card.appendChild(cap);
+        card.addEventListener('click', ()=>openLightbox(i));
         galleryEl.appendChild(card);
       });
     }
 
     function openLightbox(i){
       currentIndex = i;
-      lightboxImg.src = images[currentIndex];
-      info.textContent = `${currentIndex+1} / ${images.length}`;
+      lbImg.src = images[i];
+      lbPage.textContent = 'Page ' + (i+1);
+      lbCount.textContent = (i+1) + ' / ' + images.length;
+      refreshComments();
       lightbox.classList.add('visible');
     }
+    function closeLightbox(){ lightbox.classList.remove('visible'); }
 
-    function closeLightbox(){
-      lightbox.classList.remove('visible');
-      lightboxImg.src = '';
+    function refreshComments(){
+      const img = images[currentIndex];
+      const all = loadComments();
+      const list = all[img] || [];
+      commentsList.innerHTML = '';
+      if(list.length === 0){ commentsList.innerHTML = '<div class="small" style="padding:8px;color:#666">No comments yet — be the first!</div>'; }
+      list.forEach(c => {
+        const el = document.createElement('div'); el.className='comment';
+        el.innerHTML = `<div style="display:flex;justify-content:space-between"><div style="font-weight:700">${escapeHtml(c.user)}</div><div class="meta">${new Date(c.time).toLocaleString()}</div></div><div class="msg">${escapeHtml(c.text)}</div>`;
+        commentsList.appendChild(el);
+      });
+      commentAs.textContent = currentUser() || 'Guest';
+      commentText.value = '';
     }
 
-    lightbox.addEventListener('click', (e) => {
-      if(e.target === lightbox || e.target === lightboxImg) closeLightbox();
-    });
+    function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-    window.addEventListener('keydown', (e) => {
+    document.getElementById('loginBtn').addEventListener('click', ()=>{ loginModal.classList.add('visible'); });
+    document.getElementById('cancelLogin').addEventListener('click', ()=>{ loginModal.classList.remove('visible'); });
+    document.getElementById('doLogin').addEventListener('click', ()=>{
+      const val = document.getElementById('usernameInput').value.trim();
+      if(!val) return alert('Please type a username');
+      saveUser(val);
+      loginModal.classList.remove('visible');
+    });
+    document.getElementById('logoutBtn').addEventListener('click', ()=>{ if(confirm('Logout?')) logoutUser(); });
+
+    document.getElementById('lightbox').addEventListener('click', (e)=>{ if(e.target.id === 'lightbox' || e.target.id === 'lbImg') closeLightbox(); });
+
+    window.addEventListener('keydown',(e)=>{
       if(!lightbox.classList.contains('visible')) return;
-      if(e.key === 'ArrowRight') {
-        currentIndex = (currentIndex + 1) % images.length;
-        lightboxImg.src = images[currentIndex];
-        info.textContent = `${currentIndex+1} / ${images.length}`;
-      }
-      if(e.key === 'ArrowLeft') {
-        currentIndex = (currentIndex - 1 + images.length) % images.length;
-        lightboxImg.src = images[currentIndex];
-        info.textContent = `${currentIndex+1} / ${images.length}`;
-      }
-      if(e.key === 'Escape') closeLightbox();
+      if(e.key === 'ArrowRight'){ currentIndex = (currentIndex+1) % images.length; openLightbox(currentIndex); }
+      if(e.key === 'ArrowLeft'){ currentIndex = (currentIndex-1+images.length) % images.length; openLightbox(currentIndex); }
+      if(e.key === 'Escape'){ closeLightbox(); }
     });
 
-    renderGallery();
+    document.getElementById('saveComment').addEventListener('click', ()=>{
+      const txt = commentText.value.trim();
+      if(!txt) return alert('Comment is empty');
+      const user = currentUser() || 'Guest';
+      addComment(images[currentIndex], user, txt);
+      refreshComments();
+    });
+    document.getElementById('clearComments').addEventListener('click', ()=>{
+      if(!confirm('Clear comments for this page?')) return;
+      clearCommentsFor(images[currentIndex]); refreshComments();
+    });
+
+    document.getElementById('openComments').addEventListener('click', ()=>{
+      commentsPanel.classList.add('visible'); renderAllComments();
+    });
+    document.getElementById('closeAllComments').addEventListener('click', ()=>{ commentsPanel.classList.remove('visible'); });
+    document.getElementById('clearAllLocal').addEventListener('click', ()=>{ if(confirm('Clear ALL local comments?')){ clearAllComments(); renderAllComments(); } });
+
+    function renderAllComments(){
+      const container = document.getElementById('allComments'); container.innerHTML = '';
+      const all = loadComments();
+      const keys = Object.keys(all).sort((a,b)=>parseInt(a)-parseInt(b));
+      if(keys.length === 0) { container.innerHTML = '<div class="small" style="color:#666">No comments yet.</div>'; return; }
+      keys.forEach(k=>{
+        const h = document.createElement('div'); h.style.marginBottom='8px';
+        h.innerHTML = `<div style="font-weight:700;margin-bottom:6px">Page ${k.replace('.png','')}</div>`;
+        all[k].forEach(c=>{
+          const ce = document.createElement('div'); ce.className='comment';
+          ce.innerHTML = `<div style="display:flex;justify-content:space-between"><div style="font-weight:700">${escapeHtml(c.user)}</div><div class="meta">${new Date(c.time).toLocaleString()}</div></div><div class="msg">${escapeHtml(c.text)}</div>`;
+          h.appendChild(ce);
+        });
+        container.appendChild(h);
+      });
+    }
+
+    renderUserArea(); renderGallery();
   </script>
 </body>
 </html>

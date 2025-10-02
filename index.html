@@ -5,314 +5,297 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Pusheen's Comics</title>
   <style>
-    :root{
+    :root {
       --bg:#fffafc;
       --card:#ffffff;
       --accent:#ffb6c1;
-      --muted:#f4e9ef;
-      --gap:16px;
       --text:#333;
-      --accent-2:#ffd6e8;
+      --gap:16px;
     }
-    html,body{height:100%;margin:0;font-family:Inter, "Comic Sans MS", system-ui, -apple-system, "Segoe UI", Roboto, 'Helvetica Neue', Arial;background:var(--bg);color:var(--text)}
-    .wrap{max-width:1100px;margin:18px auto;padding:18px}
-    header{display:flex;align-items:center;justify-content:space-between;gap:12px}
-    h1{margin:0;font-size:1.6rem;color:#ff69b4}
-    .controls{display:flex;gap:8px;align-items:center}
-    .btn{background:var(--accent);border:none;padding:8px 12px;border-radius:12px;color:white;cursor:pointer;font-weight:600}
-    .ghost{background:transparent;border:1px solid rgba(0,0,0,0.06);color:var(--text)}
+    body {
+      margin:0;
+      font-family:'Comic Sans MS','Segoe UI',cursive;
+      background:var(--bg);
+      color:var(--text);
+    }
+    header {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:12px 20px;
+      background:#ffe4ec;
+      position:sticky;
+      top:0;
+      z-index:20;
+    }
+    header h1 {
+      margin:0;
+      font-size:1.5rem;
+      color:#ff69b4;
+    }
+    header button {
+      background:var(--accent);
+      border:none;
+      border-radius:8px;
+      padding:6px 14px;
+      font-size:1rem;
+      cursor:pointer;
+    }
+    .wrap {max-width:960px;margin:0 auto;padding:20px}
+    .gallery {
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+      gap:var(--gap);
+    }
+    .card {
+      background:var(--card);
+      border-radius:16px;
+      overflow:hidden;
+      box-shadow:0 4px 10px rgba(0,0,0,.15);
+      cursor:pointer;
+      transition:transform .2s;
+    }
+    .card:hover {transform:translateY(-4px)}
+    .card img {width:100%;display:block}
+    .caption {text-align:center;padding:8px;color:#555}
 
-    /* layout */
-    .layout{display:grid;grid-template-columns:1fr 360px;gap:18px;margin-top:16px}
-    @media (max-width:1000px){.layout{grid-template-columns:1fr}}
+    /* Lightbox */
+    .lightbox {
+      position:fixed;inset:0;display:none;
+      background:rgba(0,0,0,.7);
+      z-index:30;
+      justify-content:center;align-items:center;
+    }
+    .lightbox.visible {display:flex}
+    .lightbox-content {
+      background:#fff;
+      border-radius:16px;
+      max-width:90%;
+      max-height:90%;
+      display:flex;
+      flex-direction:row;
+      overflow:hidden;
+    }
+    .lightbox img {
+      max-width:60vw;
+      max-height:90vh;
+      object-fit:contain;
+      background:#000;
+    }
+    .comments {
+      width:280px;
+      padding:12px;
+      overflow-y:auto;
+      background:#fafafa;
+    }
+    .comments h3 {
+      margin-top:0;
+      font-size:1.1rem;
+      color:#ff69b4;
+    }
+    .comment {
+      background:#fff;
+      padding:6px 8px;
+      border-radius:8px;
+      margin:6px 0;
+      font-size:.9rem;
+    }
+    .comment .author {font-weight:bold;color:#333}
+    .comment .text {margin:2px 0}
+    .new-comment textarea {
+      width:100%;min-height:60px;
+      border:1px solid #ccc;
+      border-radius:8px;
+      padding:6px;
+      resize:vertical;
+    }
+    .new-comment button {
+      margin-top:6px;
+      background:var(--accent);
+      border:none;
+      border-radius:6px;
+      padding:6px 10px;
+      cursor:pointer;
+    }
 
-    /* gallery */
-    .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:var(--gap)}
-    .card{background:var(--card);border-radius:12px;overflow:hidden;position:relative;box-shadow:0 6px 18px rgba(2,6,23,0.06);cursor:pointer}
-    .card img{display:block;width:100%;height:auto}
-    .caption{padding:8px;text-align:center;font-size:0.9rem;color:#666}
+    /* Login modal */
+    .modal {
+      position:fixed;inset:0;
+      background:rgba(0,0,0,.5);
+      display:none;
+      justify-content:center;align-items:center;
+      z-index:50;
+    }
+    .modal.visible {display:flex}
+    .modal-content {
+      background:#fff;
+      padding:20px;
+      border-radius:12px;
+      width:300px;
+      text-align:center;
+    }
+    .modal-content input {
+      width:90%;
+      padding:8px;
+      margin:10px 0;
+      border:1px solid #ccc;
+      border-radius:8px;
+    }
+    .modal-content button {
+      background:var(--accent);
+      border:none;
+      border-radius:8px;
+      padding:8px 14px;
+      cursor:pointer;
+    }
 
-    /* sidebar */
-    .sidebar{background:var(--muted);padding:12px;border-radius:12px;height:fit-content}
-    .profile{display:flex;align-items:center;gap:10px}
-    .avatar{width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
-    .small{font-size:0.9rem;color:#555}
-    .link{background:none;border:none;color:#ff69b4;cursor:pointer;font-weight:600}
-
-    /* lightbox */
-    .lightbox{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.75);z-index:60}
-    .lightbox.visible{display:flex}
-    .lightbox-inner{max-width:92vw;max-height:88vh;background:linear-gradient(180deg,#fff,#fff);border-radius:12px;overflow:hidden;display:flex;gap:12px}
-    .lb-img{max-width:66vw;max-height:88vh;object-fit:contain}
-    .lb-side{width:360px;padding:12px;display:flex;flex-direction:column;gap:8px;background:var(--muted)}
-    .comments-list{flex:1;overflow:auto;padding:6px;border-radius:8px;background:linear-gradient(#fff,#fff)}
-    .comment{padding:8px;border-radius:8px;margin-bottom:6px;background:#fff;box-shadow:0 2px 6px rgba(2,6,23,0.04)}
-    .meta{font-size:0.85rem;color:#666}
-    .msg{margin-top:6px}
-    textarea{width:100%;min-height:64px;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.08)}
-
-    /* auth modal */
-    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);z-index:80}
-    .modal.visible{display:flex}
-    .card-modal{background:white;padding:18px;border-radius:12px;max-width:420px;width:100%}
-    .field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
-
-    footer{margin-top:18px;text-align:center;color:#888}
+    /* Responsive */
+    @media (max-width:600px){
+      .gallery{grid-template-columns:repeat(2,1fr)}
+      .lightbox-content{flex-direction:column;max-height:95%}
+      .lightbox img{max-width:100%;max-height:60vh}
+      .comments{width:100%;max-height:35vh}
+      .modal-content{width:90%;max-width:350px}
+      .modal-content input,.modal-content button{font-size:1.2rem}
+    }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <h1>Pusheen's Comics</h1>
-      <div class="controls">
-        <button id="openComments" class="btn ghost">Comments</button>
-        <div id="userArea"></div>
-      </div>
-    </header>
-
-    <div class="layout">
-      <main>
-        <div id="gallery" class="gallery" aria-live="polite"></div>
-      </main>
-
-      <aside class="sidebar">
-        <div id="profileBox">
-          <div class="profile">
-            <div class="avatar" id="avatar">P</div>
-            <div>
-              <div id="usernameDisplay" style="font-weight:700">Guest</div>
-              <div class="small">Login to leave comments — no email required</div>
-            </div>
-          </div>
-          <div style="margin-top:10px">
-            <button id="loginBtn" class="btn">Sign in</button>
-            <button id="logoutBtn" class="btn ghost" style="display:none;margin-left:8px">Logout</button>
-          </div>
-        </div>
-      </aside>
+  <header>
+    <h1>Pusheen's Comics</h1>
+    <div>
+      <button id="signinBtn">Sign in</button>
+      <button id="logoutBtn" style="display:none">Logout</button>
     </div>
+  </header>
 
-    <footer>Local-only accounts and comments — stored in your browser. Not a real server login.</footer>
+  <div class="wrap">
+    <main>
+      <div id="gallery" class="gallery"></div>
+    </main>
   </div>
 
   <!-- Lightbox -->
-  <div id="lightbox" class="lightbox" role="dialog" aria-modal="true">
-    <div class="lightbox-inner">
-      <img id="lbImg" class="lb-img" src="" alt="comic page" />
-      <div class="lb-side">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div id="lbPage" style="font-weight:700">Page ?</div>
-          <div class="small" id="lbCount"></div>
-        </div>
-        <div class="comments-list" id="commentsList"></div>
-        <div>
-          <div class="small">Write a comment as <span id="commentAs">Guest</span></div>
-          <textarea id="commentText" placeholder="Say something nice about this page..."></textarea>
-          <div style="display:flex;gap:8px;margin-top:8px;justify-content:flex-end">
-            <button id="saveComment" class="btn">Post</button>
-            <button id="clearComments" class="btn ghost">Clear</button>
-          </div>
+  <div id="lightbox" class="lightbox">
+    <div class="lightbox-content">
+      <img id="lightboxImg" src="" alt="">
+      <div class="comments">
+        <h3 id="commentHeader">Comments</h3>
+        <div id="commentList"></div>
+        <div class="new-comment">
+          <textarea id="commentText" placeholder="Write a comment..."></textarea>
+          <button id="postBtn">Post</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- All comments -->
-  <div id="commentsPanel" class="modal" aria-hidden="true">
-    <div class="card-modal">
-      <h3 style="margin-top:0">All comments</h3>
-      <div id="allComments" style="max-height:60vh;overflow:auto;margin-bottom:12px"></div>
-      <div style="display:flex;justify-content:flex-end;gap:8px">
-        <button id="closeAllComments" class="btn ghost">Close</button>
-        <button id="clearAllLocal" class="btn">Clear All</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Login -->
-  <div id="loginModal" class="modal" aria-hidden="true">
-    <div class="card-modal">
-      <h3 style="margin-top:0">Sign in</h3>
-      <div class="field">
-        <label>Choose a username (no email required)</label>
-        <input id="usernameInput" placeholder="e.g. CatFan123" />
-      </div>
-      <div style="display:flex;gap:8px;justify-content:flex-end">
-        <button id="cancelLogin" class="btn ghost">Cancel</button>
-        <button id="doLogin" class="btn">Sign in</button>
-      </div>
+  <!-- Login modal -->
+  <div id="loginModal" class="modal">
+    <div class="modal-content">
+      <h2>Sign in</h2>
+      <input type="text" id="username" placeholder="Enter a nickname"/>
+      <button id="loginBtn">Login</button>
     </div>
   </div>
 
   <script>
-    const STORAGE_USER_KEY = 'pusheen_user';
-    const STORAGE_COMMENTS_KEY = 'pusheen_comments_v1';
+    const MAX_IMAGES=100;
+    const galleryEl=document.getElementById('gallery');
+    const lightbox=document.getElementById('lightbox');
+    const lightboxImg=document.getElementById('lightboxImg');
+    const commentList=document.getElementById('commentList');
+    const commentText=document.getElementById('commentText');
+    const postBtn=document.getElementById('postBtn');
+    const commentHeader=document.getElementById('commentHeader');
 
-    function setCookie(name, value, days=365){
-      const d = new Date(); d.setTime(d.getTime() + (days*24*60*60*1000));
-      document.cookie = name + '=' + encodeURIComponent(value) + ';expires=' + d.toUTCString() + ';path=/';
-    }
-    function getCookie(name){
-      const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
-      return v ? decodeURIComponent(v.pop()) : null;
-    }
+    const loginModal=document.getElementById('loginModal');
+    const signinBtn=document.getElementById('signinBtn');
+    const logoutBtn=document.getElementById('logoutBtn');
+    const loginBtn=document.getElementById('loginBtn');
+    const usernameInput=document.getElementById('username');
 
-    function saveUser(username){
-      localStorage.setItem(STORAGE_USER_KEY, username);
-      setCookie('pusheen_user', username, 365);
-      renderUserArea();
-    }
-    function logoutUser(){
-      localStorage.removeItem(STORAGE_USER_KEY);
-      setCookie('pusheen_user', '', -1);
-      renderUserArea();
-    }
-    function currentUser(){
-      return localStorage.getItem(STORAGE_USER_KEY) || getCookie('pusheen_user') || null;
-    }
+    let currentImage=null;
+    let currentUser=localStorage.getItem('pusheen_user')||null;
 
-    function loadComments(){
-      try{ return JSON.parse(localStorage.getItem(STORAGE_COMMENTS_KEY)) || {}; } catch(e){ return {}; }
-    }
-    function saveComments(obj){ localStorage.setItem(STORAGE_COMMENTS_KEY, JSON.stringify(obj)); }
-    function addComment(image, user, text){
-      if(!text.trim()) return;
-      const all = loadComments();
-      all[image] = all[image] || [];
-      all[image].push({user, text: text.trim(), time: new Date().toISOString()});
-      saveComments(all);
-    }
-    function clearCommentsFor(image){ const all = loadComments(); delete all[image]; saveComments(all); }
-    function clearAllComments(){ saveComments({}); }
-
-    const MAX = 100;
-    const images = Array.from({length:MAX},(_,i)=>`${i+1}.png`);
-    const galleryEl = document.getElementById('gallery');
-    const lightbox = document.getElementById('lightbox');
-    const lbImg = document.getElementById('lbImg');
-    const commentsList = document.getElementById('commentsList');
-    const commentText = document.getElementById('commentText');
-    const commentAs = document.getElementById('commentAs');
-    const lbPage = document.getElementById('lbPage');
-    const lbCount = document.getElementById('lbCount');
-
-    let currentIndex = 0;
-
-    function renderUserArea(){
-      const ua = document.getElementById('userArea');
-      ua.innerHTML = '';
-      const user = currentUser();
-      const avatar = document.getElementById('avatar');
-      const unameEl = document.getElementById('usernameDisplay');
-      if(user){
-        ua.textContent = user;
-        document.getElementById('loginBtn').style.display = 'none';
-        document.getElementById('logoutBtn').style.display = 'inline-block';
-        avatar.textContent = user[0].toUpperCase();
-        unameEl.textContent = user;
-      } else {
-        ua.textContent = 'Guest';
-        document.getElementById('loginBtn').style.display = 'inline-block';
-        document.getElementById('logoutBtn').style.display = 'none';
-        avatar.textContent = 'P';
-        unameEl.textContent = 'Guest';
+    function renderGallery(){
+      for(let i=1;i<=MAX_IMAGES;i++){
+        const img=document.createElement('img');
+        img.src=`${i}.png`;
+        img.alt=`Page ${i}`;
+        const card=document.createElement('div');
+        card.className='card';
+        const cap=document.createElement('div');
+        cap.className='caption';
+        cap.textContent=`Page ${i}`;
+        card.appendChild(img);
+        card.appendChild(cap);
+        card.addEventListener('click',()=>openLightbox(i));
+        galleryEl.appendChild(card);
       }
     }
 
-    function renderGallery(){
-      galleryEl.innerHTML = '';
-      images.forEach((src, i) => {
-        const card = document.createElement('div'); card.className='card';
-        const img = document.createElement('img'); img.src = src; img.alt = 'Page ' + (i+1);
-        const cap = document.createElement('div'); cap.className='caption'; cap.textContent = 'Page ' + (i+1);
-        card.appendChild(img); card.appendChild(cap);
-        card.addEventListener('click', ()=>openLightbox(i));
-        galleryEl.appendChild(card);
-      });
-    }
-
     function openLightbox(i){
-      currentIndex = i;
-      lbImg.src = images[i];
-      lbPage.textContent = 'Page ' + (i+1);
-      lbCount.textContent = (i+1) + ' / ' + images.length;
-      refreshComments();
+      currentImage=i;
+      lightboxImg.src=`${i}.png`;
+      commentHeader.textContent=`Comments — Page ${i}`;
+      renderComments();
       lightbox.classList.add('visible');
     }
-    function closeLightbox(){ lightbox.classList.remove('visible'); }
+    function closeLightbox(){lightbox.classList.remove('visible')}
 
-    function refreshComments(){
-      const img = images[currentIndex];
-      const all = loadComments();
-      const list = all[img] || [];
-      commentsList.innerHTML = '';
-      if(list.length === 0){ commentsList.innerHTML = '<div class="small" style="padding:8px;color:#666">No comments yet — be the first!</div>'; }
-      list.forEach(c => {
-        const el = document.createElement('div'); el.className='comment';
-        el.innerHTML = `<div style="display:flex;justify-content:space-between"><div style="font-weight:700">${escapeHtml(c.user)}</div><div class="meta">${new Date(c.time).toLocaleString()}</div></div><div class="msg">${escapeHtml(c.text)}</div>`;
-        commentsList.appendChild(el);
+    lightbox.addEventListener('click',(e)=>{
+      if(e.target===lightbox) closeLightbox();
+    });
+
+    function renderComments(){
+      const all=JSON.parse(localStorage.getItem('pusheen_comments')||'{}');
+      const list=all[currentImage]||[];
+      commentList.innerHTML='';
+      list.forEach(c=>{
+        const div=document.createElement('div');
+        div.className='comment';
+        div.innerHTML=`<div class=\"author\">${c.user}</div><div class=\"text\">${c.text}</div>`;
+        commentList.appendChild(div);
       });
-      commentAs.textContent = currentUser() || 'Guest';
-      commentText.value = '';
     }
 
-    function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    postBtn.onclick=()=>{
+      if(!currentUser){alert('Please sign in first!');return;}
+      const text=commentText.value.trim();
+      if(!text) return;
+      let all=JSON.parse(localStorage.getItem('pusheen_comments')||'{}');
+      if(!all[currentImage]) all[currentImage]=[];
+      all[currentImage].push({user:currentUser,text});
+      localStorage.setItem('pusheen_comments',JSON.stringify(all));
+      commentText.value='';
+      renderComments();
+    };
 
-    document.getElementById('loginBtn').addEventListener('click', ()=>{ loginModal.classList.add('visible'); });
-    document.getElementById('cancelLogin').addEventListener('click', ()=>{ loginModal.classList.remove('visible'); });
-    document.getElementById('doLogin').addEventListener('click', ()=>{
-      const val = document.getElementById('usernameInput').value.trim();
-      if(!val) return alert('Please type a username');
-      saveUser(val);
+    signinBtn.onclick=()=>{loginModal.classList.add('visible')};
+    logoutBtn.onclick=()=>{currentUser=null;localStorage.removeItem('pusheen_user');updateAuth()};
+    loginBtn.onclick=()=>{
+      const name=usernameInput.value.trim();
+      if(!name) return;
+      currentUser=name;
+      localStorage.setItem('pusheen_user',name);
       loginModal.classList.remove('visible');
-    });
-    document.getElementById('logoutBtn').addEventListener('click', ()=>{ if(confirm('Logout?')) logoutUser(); });
+      usernameInput.value='';
+      updateAuth();
+    };
 
-    document.getElementById('lightbox').addEventListener('click', (e)=>{ if(e.target.id === 'lightbox' || e.target.id === 'lbImg') closeLightbox(); });
-
-    window.addEventListener('keydown',(e)=>{
-      if(!lightbox.classList.contains('visible')) return;
-      if(e.key === 'ArrowRight'){ currentIndex = (currentIndex+1) % images.length; openLightbox(currentIndex); }
-      if(e.key === 'ArrowLeft'){ currentIndex = (currentIndex-1+images.length) % images.length; openLightbox(currentIndex); }
-      if(e.key === 'Escape'){ closeLightbox(); }
-    });
-
-    document.getElementById('saveComment').addEventListener('click', ()=>{
-      const txt = commentText.value.trim();
-      if(!txt) return alert('Comment is empty');
-      const user = currentUser() || 'Guest';
-      addComment(images[currentIndex], user, txt);
-      refreshComments();
-    });
-    document.getElementById('clearComments').addEventListener('click', ()=>{
-      if(!confirm('Clear comments for this page?')) return;
-      clearCommentsFor(images[currentIndex]); refreshComments();
-    });
-
-    document.getElementById('openComments').addEventListener('click', ()=>{
-      commentsPanel.classList.add('visible'); renderAllComments();
-    });
-    document.getElementById('closeAllComments').addEventListener('click', ()=>{ commentsPanel.classList.remove('visible'); });
-    document.getElementById('clearAllLocal').addEventListener('click', ()=>{ if(confirm('Clear ALL local comments?')){ clearAllComments(); renderAllComments(); } });
-
-    function renderAllComments(){
-      const container = document.getElementById('allComments'); container.innerHTML = '';
-      const all = loadComments();
-      const keys = Object.keys(all).sort((a,b)=>parseInt(a)-parseInt(b));
-      if(keys.length === 0) { container.innerHTML = '<div class="small" style="color:#666">No comments yet.</div>'; return; }
-      keys.forEach(k=>{
-        const h = document.createElement('div'); h.style.marginBottom='8px';
-        h.innerHTML = `<div style="font-weight:700;margin-bottom:6px">Page ${k.replace('.png','')}</div>`;
-        all[k].forEach(c=>{
-          const ce = document.createElement('div'); ce.className='comment';
-          ce.innerHTML = `<div style="display:flex;justify-content:space-between"><div style="font-weight:700">${escapeHtml(c.user)}</div><div class="meta">${new Date(c.time).toLocaleString()}</div></div><div class="msg">${escapeHtml(c.text)}</div>`;
-          h.appendChild(ce);
-        });
-        container.appendChild(h);
-      });
+    function updateAuth(){
+      if(currentUser){
+        signinBtn.style.display='none';
+        logoutBtn.style.display='inline-block';
+      } else {
+        signinBtn.style.display='inline-block';
+        logoutBtn.style.display='none';
+      }
     }
 
-    renderUserArea(); renderGallery();
+    renderGallery();
+    updateAuth();
   </script>
 </body>
 </html>

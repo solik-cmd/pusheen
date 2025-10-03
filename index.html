@@ -151,7 +151,7 @@
     function saveUser(u){localStorage.setItem(STORAGE_USER_KEY,u);renderUserArea();}
     function logoutUser(){localStorage.removeItem(STORAGE_USER_KEY);renderUserArea();}
 
-    const images=[];for(let i=1;i<=100;i++)images.push(i+'.png');
+    const images=[];for(let i=1;i<=200;i++)images.push(i+'.png');
     const gallery=document.getElementById('gallery');
     function renderGallery(){
       gallery.innerHTML='';
